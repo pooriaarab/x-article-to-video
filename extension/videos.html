@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Videos - X Article to Video</title>
+  <link rel="stylesheet" href="videos.css">
+</head>
+<body>
+  <div class="videos-container">
+    <!-- Header -->
+    <div class="header">
+      <button class="back-button" id="backButton">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m15 18-6-6 6-6"/>
+        </svg>
+        Back
+      </button>
+      <h1 class="page-title">Your Videos</h1>
+      <button class="clear-all-button" id="clearAllButton">Clear All</button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="processing">Processing</button>
+      <button class="filter-btn" data-filter="completed">Completed</button>
+      <button class="filter-btn" data-filter="failed">Failed</button>
+    </div>
+
+    <!-- Videos Grid -->
+    <div class="videos-grid" id="videosGrid">
+      <!-- Videos will be populated here -->
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" id="emptyState" style="display: none;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="18" height="18" x="3" y="3" rx="2"/>
+        <path d="m10 8 6 4-6 4Z"/>
+      </svg>
+      <h2>No videos yet</h2>
+      <p>Your generated videos will appear here</p>
+    </div>
+  </div>
+
+  <script src="videos.js"></script>
+</body>
+</html>

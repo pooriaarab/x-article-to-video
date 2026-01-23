@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>X Article to Video</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>X Article to Video</h1>
+      <div class="header-actions">
+        <div class="status-dot-header" id="statusDotMain" title="Server status">
+          <div class="status-dot-indicator"></div>
+        </div>
+        <button id="videosBtn" class="icon-btn" title="Your Videos">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="18" x="3" y="3" rx="2"/>
+            <path d="m10 8 6 4-6 4Z"/>
+          </svg>
+        </button>
+        <button id="settingsBtn" class="icon-btn" title="Settings">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainView" class="view">
+      <!-- Capture Section -->
+      <div id="captureSection" class="scrollable-content">
+        <p class="description">Capture the current X post and turn it into a video</p>
+        <button id="captureTweetBtn" class="primary-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+            <path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z" />
+            <circle cx="12" cy="13" r="3" />
+          </svg>
+          Capture X Post
+        </button>
+      </div>
+
+      <!-- X Post Preview -->
+      <div id="tweetPreview" class="hidden">
+        <div class="scrollable-content">
+          <h3>X Post Preview</h3>
+          <div class="tweet-card">
+            <div class="tweet-author">
+              <img id="authorAvatar" class="avatar" src="" alt="Avatar">
+              <div>
+                <div id="authorName" class="author-name"></div>
+                <div id="authorUsername" class="author-username"></div>
+              </div>
+            </div>
+            <div id="tweetText" class="tweet-text"></div>
+            <div id="tweetMedia" class="tweet-media"></div>
+          </div>
+
+          <!-- Style Selection Carousel -->
+          <div class="style-selection">
+            <h3>Select Style</h3>
+            <p class="select-hint">Select multiple styles or just one</p>
+
+            <div class="carousel-container">
+            <button class="carousel-arrow carousel-arrow-left" id="carouselPrev">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"/>
+              </svg>
+            </button>
+
+            <div class="carousel-track">
+              <div class="style-card" data-style="minimal" data-index="0">
+                <input type="checkbox" class="style-checkbox" id="style-minimal" checked>
+                <label for="style-minimal" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                  </svg>
+                  <h4 class="style-name">Minimal</h4>
+                  <p class="style-description">Clean and elegant design with subtle animations</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="terminal" data-index="1">
+                <input type="checkbox" class="style-checkbox" id="style-terminal">
+                <label for="style-terminal" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="4 17 10 11 4 5"/>
+                    <line x1="12" x2="20" y1="19" y2="19"/>
+                  </svg>
+                  <h4 class="style-name">Terminal</h4>
+                  <p class="style-description">Hacker aesthetic with monospace fonts and matrix vibes</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="kinetic" data-index="2">
+                <input type="checkbox" class="style-checkbox" id="style-kinetic">
+                <label for="style-kinetic" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/>
+                    <rect x="2" y="6" width="14" height="12" rx="2"/>
+                  </svg>
+                  <h4 class="style-name">Kinetic</h4>
+                  <p class="style-description">Dynamic motion graphics with energetic transitions</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="glassmorphism" data-index="3">
+                <input type="checkbox" class="style-checkbox" id="style-glassmorphism">
+                <label for="style-glassmorphism" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="6"/>
+                    <circle cx="12" cy="12" r="2"/>
+                  </svg>
+                  <h4 class="style-name">Glassmorphism</h4>
+                  <p class="style-description">Frosted glass effects with soft, blurred backgrounds</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="neon" data-index="4">
+                <input type="checkbox" class="style-checkbox" id="style-neon">
+                <label for="style-neon" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>
+                  </svg>
+                  <h4 class="style-name">Neon</h4>
+                  <p class="style-description">Vibrant glowing colors with cyberpunk aesthetics</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="explosive" data-index="5">
+                <input type="checkbox" class="style-checkbox" id="style-explosive">
+                <label for="style-explosive" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+                  </svg>
+                  <h4 class="style-name">Explosive</h4>
+                  <p class="style-description">Bold and dramatic with explosive visual effects</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="typewriter" data-index="6">
+                <input type="checkbox" class="style-checkbox" id="style-typewriter">
+                <label for="style-typewriter" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10 8h.01"/>
+                    <path d="M12 12h.01"/>
+                    <path d="M14 8h.01"/>
+                    <path d="M16 12h.01"/>
+                    <path d="M18 8h.01"/>
+                    <path d="M6 8h.01"/>
+                    <path d="M7 16h10"/>
+                    <path d="M8 12h.01"/>
+                    <rect width="20" height="16" x="2" y="4" rx="2"/>
+                  </svg>
+                  <h4 class="style-name">Typewriter</h4>
+                  <p class="style-description">Classic typewriter effect with vintage charm</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="tiktok" data-index="7">
+                <input type="checkbox" class="style-checkbox" id="style-tiktok">
+                <label for="style-tiktok" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="7" height="18" x="3" y="3" rx="1"/>
+                    <path d="M10 8h10"/>
+                    <path d="M10 12h10"/>
+                    <path d="M10 16h10"/>
+                  </svg>
+                  <h4 class="style-name">TikTok</h4>
+                  <p class="style-description">Fast-paced vertical style with bold captions</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="mrbeast" data-index="8">
+                <input type="checkbox" class="style-checkbox" id="style-mrbeast">
+                <label for="style-mrbeast" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                  </svg>
+                  <h4 class="style-name">MrBeast</h4>
+                  <p class="style-description">High-energy bold text with arrows and highlights</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="neobrutalism" data-index="9">
+                <input type="checkbox" class="style-checkbox" id="style-neobrutalism">
+                <label for="style-neobrutalism" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2"/>
+                    <path d="M3 9h18"/>
+                    <path d="M9 21V9"/>
+                  </svg>
+                  <h4 class="style-name">Neo-Brutalism</h4>
+                  <p class="style-description">Raw edgy design with harsh shadows and bold colors</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="darkcyber" data-index="10">
+                <input type="checkbox" class="style-checkbox" id="style-darkcyber">
+                <label for="style-darkcyber" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2a10 10 0 1 0 10 10H12V2Z"/>
+                    <path d="M12 12 2 2"/>
+                  </svg>
+                  <h4 class="style-name">Dark Cyber</h4>
+                  <p class="style-description">Futuristic dark mode with neon cyan glows</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="applesaas" data-index="11">
+                <input type="checkbox" class="style-checkbox" id="style-applesaas">
+                <label for="style-applesaas" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2"/>
+                    <circle cx="9" cy="9" r="2"/>
+                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                  </svg>
+                  <h4 class="style-name">Apple SaaS</h4>
+                  <p class="style-description">Clean minimalist with spring physics and floating cards</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="zoomcut" data-index="12">
+                <input type="checkbox" class="style-checkbox" id="style-zoomcut">
+                <label for="style-zoomcut" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                    <path d="M11 8v6"/>
+                    <path d="M8 11h6"/>
+                  </svg>
+                  <h4 class="style-name">Zoom Cut</h4>
+                  <p class="style-description">Fast-paced word zoom with extreme cuts and RGB glitch effects</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="3dperspective" data-index="13">
+                <input type="checkbox" class="style-checkbox" id="style-3dperspective">
+                <label for="style-3dperspective" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12 7 2l5 10-5 10z"/>
+                    <path d="M22 12 17 2l-5 10 5 10z"/>
+                  </svg>
+                  <h4 class="style-name">3D Perspective</h4>
+                  <p class="style-description">Rotating 3D text with floating images in perspective space</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="glitchvhs" data-index="14">
+                <input type="checkbox" class="style-checkbox" id="style-glitchvhs">
+                <label for="style-glitchvhs" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="20" height="16" x="2" y="4" rx="2"/>
+                    <path d="M2 8h20"/>
+                    <circle cx="8" cy="14" r="2"/>
+                    <path d="M18 12h.01"/>
+                  </svg>
+                  <h4 class="style-name">Glitch VHS</h4>
+                  <p class="style-description">Retro VHS aesthetic with tracking errors and analog glitches</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="particleburst" data-index="15">
+                <input type="checkbox" class="style-checkbox" id="style-particleburst">
+                <label for="style-particleburst" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v4"/>
+                    <path d="m6.8 15-3.5 2"/>
+                    <path d="m20.7 7-3.5 2"/>
+                    <path d="M6.8 9 3.3 7"/>
+                    <path d="m20.7 17-3.5-2"/>
+                    <path d="m9 22 3-8 3 8"/>
+                    <path d="M8 22h8"/>
+                    <path d="M18 18.7a9 9 0 1 0-12 0"/>
+                  </svg>
+                  <h4 class="style-name">Particle Burst</h4>
+                  <p class="style-description">Explosive particle effects with energy rings and light rays</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="starwars" data-index="16">
+                <input type="checkbox" class="style-checkbox" id="style-starwars">
+                <label for="style-starwars" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  </svg>
+                  <h4 class="style-name">Star Wars</h4>
+                  <p class="style-description">Iconic opening crawl with starfield and 3D perspective scroll</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="speedread" data-index="17">
+                <input type="checkbox" class="style-checkbox" id="style-speedread">
+                <label for="style-speedread" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  <h4 class="style-name">Speed Read</h4>
+                  <p class="style-description">Rapid word-by-word display with ORP highlighting for fast reading</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="subwaysurfers" data-index="18">
+                <input type="checkbox" class="style-checkbox" id="style-subwaysurfers">
+                <label for="style-subwaysurfers" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v20M2 12h20"/>
+                  </svg>
+                  <h4 class="style-name">Subway Surfers</h4>
+                  <p class="style-description">Viral TikTok format with gameplay at bottom and text on top</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="minecraftparkour" data-index="19">
+                <input type="checkbox" class="style-checkbox" id="style-minecraftparkour">
+                <label for="style-minecraftparkour" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                  </svg>
+                  <h4 class="style-name">Minecraft Parkour</h4>
+                  <p class="style-description">Pixelated blocks, player character, health/hotbar UI</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="lofi" data-index="20">
+                <input type="checkbox" class="style-checkbox" id="style-lofi">
+                <label for="style-lofi" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  <h4 class="style-name">Lofi Study</h4>
+                  <p class="style-description">Chill aesthetic with rain, vinyl player, typewriter effect</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="comicbook" data-index="21">
+                <input type="checkbox" class="style-checkbox" id="style-comicbook">
+                <label for="style-comicbook" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+                  </svg>
+                  <h4 class="style-name">Comic Book</h4>
+                  <p class="style-description">Speech bubbles, POW/BAM effects, comic panels</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="matrix" data-index="22">
+                <input type="checkbox" class="style-checkbox" id="style-matrix">
+                <label for="style-matrix" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 2h20M2 12h20M2 22h20"/>
+                  </svg>
+                  <h4 class="style-name">Matrix Code</h4>
+                  <p class="style-description">Falling green code rain with terminal glitch effects</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="disney" data-index="23">
+                <input type="checkbox" class="style-checkbox" id="style-disney">
+                <label for="style-disney" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v4"/>
+                    <path d="m6.8 15-3.5 2"/>
+                    <path d="m20.7 7-3.5 2"/>
+                  </svg>
+                  <h4 class="style-name">Disney Magic</h4>
+                  <p class="style-description">Magical sparkles, castle silhouette, fairy dust trails</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="anime" data-index="24">
+                <input type="checkbox" class="style-checkbox" id="style-anime">
+                <label for="style-anime" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                  </svg>
+                  <h4 class="style-name">Anime</h4>
+                  <p class="style-description">Speed lines, manga effects, sweat drops, cherry blossoms</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="pokemon" data-index="25">
+                <input type="checkbox" class="style-checkbox" id="style-pokemon">
+                <label for="style-pokemon" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="4"/>
+                  </svg>
+                  <h4 class="style-name">Pokemon</h4>
+                  <p class="style-description">Pokedex screen style, Pokeball, trainer card</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="fortnite" data-index="26">
+                <input type="checkbox" class="style-checkbox" id="style-fortnite">
+                <label for="style-fortnite" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 10h.01"/>
+                    <path d="M15 10h.01"/>
+                    <path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"/>
+                  </svg>
+                  <h4 class="style-name">Fortnite</h4>
+                  <p class="style-description">Victory Royale style, player cards, elimination counter</p>
+                </label>
+              </div>
+
+              <div class="style-card" data-style="technicalexplainer" data-index="27">
+                <input type="checkbox" class="style-checkbox" id="style-technicalexplainer">
+                <label for="style-technicalexplainer" class="style-card-content">
+                  <svg class="style-icon-large" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                    <path d="M6 8h.01"/>
+                    <path d="M10 8h.01"/>
+                  </svg>
+                  <h4 class="style-name">Technical Explainer</h4>
+                  <p class="style-description">Phone & laptop UI, code snippets, dashboard elements</p>
+                </label>
+              </div>
+            </div>
+
+            <button class="carousel-arrow carousel-arrow-right" id="carouselNext">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m9 18 6-6-6-6"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="carousel-indicators" id="carouselIndicators">
+            <span class="indicator active" data-index="0"></span>
+            <span class="indicator" data-index="1"></span>
+            <span class="indicator" data-index="2"></span>
+            <span class="indicator" data-index="3"></span>
+            <span class="indicator" data-index="4"></span>
+            <span class="indicator" data-index="5"></span>
+            <span class="indicator" data-index="6"></span>
+            <span class="indicator" data-index="7"></span>
+            <span class="indicator" data-index="8"></span>
+            <span class="indicator" data-index="9"></span>
+            <span class="indicator" data-index="10"></span>
+            <span class="indicator" data-index="11"></span>
+            <span class="indicator" data-index="12"></span>
+            <span class="indicator" data-index="13"></span>
+            <span class="indicator" data-index="14"></span>
+            <span class="indicator" data-index="15"></span>
+            <span class="indicator" data-index="16"></span>
+            <span class="indicator" data-index="17"></span>
+            <span class="indicator" data-index="18"></span>
+            <span class="indicator" data-index="19"></span>
+            <span class="indicator" data-index="20"></span>
+            <span class="indicator" data-index="21"></span>
+            <span class="indicator" data-index="22"></span>
+            <span class="indicator" data-index="23"></span>
+            <span class="indicator" data-index="24"></span>
+            <span class="indicator" data-index="25"></span>
+            <span class="indicator" data-index="26"></span>
+            <span class="indicator" data-index="27"></span>
+          </div>
+        </div>
+
+        <!-- Grok Images Toggle -->
+        <div class="grok-images-section">
+          <div class="toggle-container-inline">
+            <input type="checkbox" id="grokImagesMain" class="toggle-checkbox-inline">
+            <label for="grokImagesMain" class="toggle-label-inline">
+              <span class="toggle-switch-inline"></span>
+              <span class="toggle-text-inline">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                  <circle cx="9" cy="9" r="2"/>
+                  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                </svg>
+                <strong>Enable AI Images</strong>
+                <small>Generate images and word-by-word captions</small>
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="sticky-button-container">
+        <button id="generateVideoBtn" class="primary-btn">Generate Video</button>
+      </div>
+    </div>
+
+      <!-- Video Generation Progress -->
+      <div id="generationProgress" class="hidden">
+        <div class="scrollable-content">
+          <h3>Generating Video...</h3>
+          <div class="progress-bar">
+            <div id="progressFill" class="progress-fill"></div>
+          </div>
+          <p id="progressText" class="progress-text">Initializing...</p>
+        </div>
+      </div>
+
+      <!-- Video Gallery -->
+      <div id="videoPreview" class="hidden">
+        <div class="scrollable-content">
+          <h3>Your Videos</h3>
+
+          <!-- Main Video Player with Navigation -->
+        <div class="video-player-container">
+          <button id="prevVideoBtn" class="nav-arrow nav-arrow-left" title="Previous video">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+          </button>
+
+          <div class="main-video-wrapper">
+            <video id="videoPlayer" controls autoplay loop></video>
+            <div class="video-info">
+              <div class="video-meta">
+                <span id="currentStyleName" class="style-label"></span>
+                <span id="currentVideoDuration" class="duration-label"></span>
+              </div>
+            </div>
+          </div>
+
+          <button id="nextVideoBtn" class="nav-arrow nav-arrow-right" title="Next video">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m9 18 6-6-6-6"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Thumbnail Gallery -->
+        <div class="thumbnail-gallery" id="thumbnailGallery">
+          <!-- Thumbnails will be populated by JavaScript -->
+        </div>
+
+        </div>
+
+        <div class="sticky-button-container-results">
+          <div class="video-actions">
+            <button id="downloadCurrentBtn" class="primary-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                <path d="M12 15V3" />
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <path d="m7 10 5 5 5-5" />
+              </svg>
+              Download Current
+            </button>
+            <button id="downloadAllBtn" class="secondary-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+                <polyline points="7 11 12 16 17 11" />
+                <line x1="12" y1="16" x2="12" y2="4" />
+              </svg>
+              Download All
+            </button>
+          </div>
+
+          <button id="newVideoBtn" class="tertiary-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+            </svg>
+            New Video
+          </button>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div id="errorMessage" class="hidden error-box"></div>
+    </div>
+
+    <!-- Settings View -->
+    <div id="settingsView" class="view hidden">
+      <div class="scrollable-content">
+        <div class="settings-header">
+        <button id="backBtn" class="back-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+            <path d="m12 19-7-7 7-7" />
+            <path d="M19 12H5" />
+          </svg>
+          Back
+        </button>
+        <div class="settings-title-row">
+          <div class="status-dot-inline" id="statusDotHeader"></div>
+          <h2>Settings</h2>
+        </div>
+      </div>
+
+      <div class="settings-content">
+        <!-- Server Status -->
+        <div class="server-status" id="serverStatus">
+          <div class="status-indicator">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Checking server...</span>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <label for="grokApiKey">Grok API Key</label>
+          <input type="password" id="grokApiKey" placeholder="Enter your Grok API key">
+          <small>Get your API key from <a href="https://console.x.ai/" target="_blank">console.x.ai</a></small>
+        </div>
+
+        <div class="setting-group">
+          <label for="remotionServer">Remotion Server URL</label>
+          <input type="text" id="remotionServer" placeholder="http://localhost:3000" value="http://localhost:3000">
+          <details class="server-help">
+            <summary>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <path d="M12 17h.01"/>
+              </svg>
+              How to start the server
+            </summary>
+            <div class="help-content">
+              <p><strong>Server not running?</strong></p>
+              <p>1. Open Terminal in the project folder</p>
+              <p>2. Run: <code>npm run server</code></p>
+              <p>3. Wait for "Remotion API server running"</p>
+              <p>4. Come back here and click "Save Settings"</p>
+            </div>
+          </details>
+        </div>
+
+        <div class="setting-group">
+          <label for="videoDuration">Video Duration</label>
+          <select id="videoDuration" class="duration-select">
+            <option value="auto">Auto (based on content length)</option>
+            <option value="3">3 seconds (fixed)</option>
+            <option value="5" selected>5 seconds (fixed)</option>
+            <option value="8">8 seconds (fixed)</option>
+            <option value="10">10 seconds (fixed)</option>
+            <option value="15">15 seconds (fixed)</option>
+            <option value="20">20 seconds (fixed)</option>
+            <option value="30">30 seconds (fixed)</option>
+          </select>
+          <small id="durationPreview" class="duration-preview">5 seconds (150 frames @ 30fps)</small>
+        </div>
+
+        <div class="setting-group">
+          <div class="toggle-container">
+            <input type="checkbox" id="grokImages" class="toggle-checkbox">
+            <label for="grokImages" class="toggle-label">
+              <span class="toggle-switch"></span>
+              <span class="toggle-text">
+                <strong>Enable Grok Images</strong>
+                <small style="display: block; margin-top: 4px; color: #98989d;">Generate AI images and break down text into word-by-word captions</small>
+              </span>
+            </label>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <div class="sticky-button-container-settings">
+        <button id="saveSettingsBtn" class="primary-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+            <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+            <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />
+            <path d="M7 3v4a1 1 0 0 0 1 1h7" />
+          </svg>
+          Save Settings
+        </button>
+        <p id="saveStatus" class="save-status hidden"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

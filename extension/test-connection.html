@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Server Connection</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 20px;
+      background: #1c1c1e;
+      color: #fff;
+    }
+    button {
+      padding: 12px 24px;
+      background: #0a84ff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+      margin: 10px 5px;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #2c2c2e;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .success { color: #30d158; }
+    .error { color: #ff453a; }
+  </style>
+</head>
+<body>
+  <h1>Server Connection Test</h1>
+  <p>Use this page to test if the extension can connect to the server.</p>
+
+  <button onclick="testFetch()">Test Fetch</button>
+  <button onclick="testXHR()">Test XMLHttpRequest</button>
+  <button onclick="checkPermissions()">Check Permissions</button>
+
+  <div id="result"></div>
+
+  <script>
+    const result = document.getElementById('result');
+
+    async function testFetch() {
+      result.innerHTML = 'Testing fetch...\n';
+      try {
+        const response = await fetch('http://localhost:3000/api/health', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          mode: 'cors'
+        });
+
+        const data = await response.json();
+        result.innerHTML += `\n✅ Success!\n`;
+        result.innerHTML += `Status: ${response.status}\n`;
+        result.innerHTML += `Response: ${JSON.stringify(data, null, 2)}`;
+        result.className = 'success';
+      } catch (error) {
+        result.innerHTML += `\n❌ Error!\n`;
+        result.innerHTML += `Message: ${error.message}\n`;
+        result.innerHTML += `Stack: ${error.stack}`;
+        result.className = 'error';
+      }
+    }
+
+    async function testXHR() {
+      result.innerHTML = 'Testing XMLHttpRequest...\n';
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', 'http://localhost:3000/api/health');
+      xhr.onload = function() {
+        result.innerHTML += `\n✅ Success!\n`;
+        result.innerHTML += `Status: ${xhr.status}\n`;
+        result.innerHTML += `Response: ${xhr.responseText}`;
+        result.className = 'success';
+      };
+      xhr.onerror = function() {
+        result.innerHTML += `\n❌ Error!\n`;
+        result.innerHTML += `Status: ${xhr.status}\n`;
+        result.innerHTML += `Error occurred`;
+        result.className = 'error';
+      };
+      xhr.send();
+    }
+
+    async function checkPermissions() {
+      result.innerHTML = 'Checking permissions...\n\n';
+
+      // Check manifest
+      const manifest = chrome.runtime.getManifest();
+      result.innerHTML += `Extension Name: ${manifest.name}\n`;
+      result.innerHTML += `Version: ${manifest.version}\n\n`;
+
+      result.innerHTML += `Host Permissions:\n`;
+      manifest.host_permissions.forEach(perm => {
+        result.innerHTML += `  - ${perm}\n`;
+      });
+
+      result.innerHTML += `\nPermissions:\n`;
+      manifest.permissions.forEach(perm => {
+        result.innerHTML += `  - ${perm}\n`;
+      });
+
+      result.innerHTML += `\n\n🔍 Now testing actual connection...`;
+      setTimeout(testFetch, 1000);
+    }
+  </script>
+</body>
+</html>

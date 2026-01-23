@@ -1,0 +1,22 @@
+{
+  "name": "tweet-to-remotion",
+  "version": "1.0.0",
+  "description": "Chrome extension to turn tweets into motion graphic videos",
+  "scripts": {
+    "start": "remotion studio",
+    "build": "remotion render",
+    "server": "node server.js"
+  },
+  "dependencies": {
+    "@remotion/bundler": "^4.0.407",
+    "@remotion/cli": "^4.0.407",
+    "@remotion/renderer": "^4.0.407",
+    "body-parser": "^2.2.2",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "remotion": "^4.0.407",
+    "uuid": "^13.0.0"
+  }
+}

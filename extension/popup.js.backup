@@ -1,0 +1,798 @@
+// Popup script for X Article to Video extension
+
+let currentXPostData = null;
+let selectedStyles = [];
+
+// Elon-style progress messages
+const PROGRESS_MESSAGES = [
+  'Groking the multiverse...',
+  'Summoning the neural nets...',
+  'Achieving AGI... jk, rendering video',
+  'Making it happen faster than regulators can complain...',
+  'Compressing spacetime into pixels...',
+  'Teaching robots to dance...',
+  'Optimizing for first principles...',
+  'Deploying to Mars datacenter...',
+  'Making anime real (the video)...',
+  'Running at ludicrous speed...',
+  'Calculating probability of success (it\'s high)...',
+  'Channeling meme energy...',
+  'Breaking through bureaucratic nonsense...',
+  'Bootstrapping consciousness... almost there',
+  'Pushing pixels at c...',
+  'Manifesting destiny (your video)',
+  'Turning X posts into cinema...',
+  'Accelerating towards singularity...',
+  'Making the impossible routine...'
+];
+
+function getRandomProgressMessage() {
+  return PROGRESS_MESSAGES[Math.floor(Math.random() * PROGRESS_MESSAGES.length)];
+}
+
+// DOM Elements
+const mainView = document.getElementById('mainView');
+const settingsView = document.getElementById('settingsView');
+const captureSection = document.getElementById('captureSection');
+const tweetPreview = document.getElementById('tweetPreview');
+const generationProgress = document.getElementById('generationProgress');
+const videoPreview = document.getElementById('videoPreview');
+const errorMessage = document.getElementById('errorMessage');
+
+// Buttons
+const captureTweetBtn = document.getElementById('captureTweetBtn');
+const generateVideoBtn = document.getElementById('generateVideoBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const newVideoBtn = document.getElementById('newVideoBtn');
+const settingsBtn = document.getElementById('settingsBtn');
+const backBtn = document.getElementById('backBtn');
+const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+
+// Style buttons
+const styleBtns = document.querySelectorAll('.style-btn');
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+  loadSettings();
+  setupEventListeners();
+});
+
+function setupEventListeners() {
+  captureTweetBtn.addEventListener('click', captureXPost);
+  generateVideoBtn.addEventListener('click', generateVideo);
+  downloadBtn.addEventListener('click', downloadVideo);
+  newVideoBtn.addEventListener('click', resetToCapture);
+  settingsBtn.addEventListener('click', showSettings);
+  backBtn.addEventListener('click', showMain);
+  saveSettingsBtn.addEventListener('click', saveSettings);
+
+  styleBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const style = btn.getAttribute('data-style');
+
+      // Toggle style in/out of selectedStyles array
+      if (selectedStyles.includes(style)) {
+        selectedStyles = selectedStyles.filter(s => s !== style);
+        btn.classList.remove('active');
+      } else {
+        selectedStyles.push(style);
+        btn.classList.add('active');
+      }
+
+      // Update button text based on selection count
+      updateGenerateButtonText();
+    });
+  });
+}
+
+function updateGenerateButtonText() {
+  const count = selectedStyles.length;
+  if (count === 0) {
+    generateVideoBtn.textContent = 'Select a style';
+    generateVideoBtn.disabled = true;
+  } else if (count === 1) {
+    generateVideoBtn.textContent = 'Generate Video';
+    generateVideoBtn.disabled = false;
+  } else {
+    generateVideoBtn.textContent = `Generate ${count} Videos`;
+    generateVideoBtn.disabled = false;
+  }
+}
+
+async function captureXPost() {
+  showError('');
+  captureTweetBtn.disabled = true;
+
+  // Store original HTML
+  const originalHTML = captureTweetBtn.innerHTML;
+  captureTweetBtn.textContent = 'Capturing...';
+
+  try {
+    // Get active tab
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+    // Check if we're on Twitter/X
+    if (!tab.url.includes('twitter.com') && !tab.url.includes('x.com')) {
+      throw new Error('Please navigate to an X post on Twitter/X');
+    }
+
+    // Send message to content script
+    const response = await chrome.tabs.sendMessage(tab.id, { action: 'captureTweet' });
+
+    if (response.success && response.data) {
+      if (response.data.error) {
+        throw new Error(response.data.error);
+      }
+
+      currentXPostData = response.data;
+      displayXPostPreview(response.data);
+      captureSection.classList.add('hidden');
+      tweetPreview.classList.remove('hidden');
+
+      // Initialize button state
+      updateGenerateButtonText();
+    } else {
+      throw new Error('Failed to capture X post');
+    }
+  } catch (error) {
+    // Enhanced error message
+    let errorMsg = error.message;
+    if (error.message.includes('Could not establish connection')) {
+      errorMsg = 'Extension not loaded properly. Please:\n1. Go to chrome://extensions/\n2. Find "X Article to Video"\n3. Click the reload button\n4. Try again';
+    }
+    showError(errorMsg);
+    captureTweetBtn.disabled = false;
+    captureTweetBtn.innerHTML = originalHTML;
+  }
+}
+
+function displayXPostPreview(data) {
+  // Author info
+  if (data.author.profilePicUrl) {
+    document.getElementById('authorAvatar').src = data.author.profilePicUrl;
+  }
+  document.getElementById('authorName').textContent = data.author.name;
+  document.getElementById('authorUsername').textContent = data.author.username;
+
+  // X Post text
+  document.getElementById('tweetText').textContent = data.text;
+
+  // Media
+  const mediaContainer = document.getElementById('tweetMedia');
+  mediaContainer.innerHTML = '';
+
+  if (data.media && data.media.length > 0) {
+    data.media.forEach(item => {
+      if (item.type === 'image') {
+        const img = document.createElement('img');
+        img.src = item.url;
+        img.alt = 'X Post image';
+        mediaContainer.appendChild(img);
+      } else if (item.type === 'video') {
+        const video = document.createElement('video');
+        video.src = item.url;
+        video.poster = item.poster;
+        video.controls = false;
+        mediaContainer.appendChild(video);
+      }
+    });
+  }
+}
+
+async function generateVideo() {
+  showError('');
+  generateVideoBtn.disabled = true;
+
+  // Check if any styles are selected
+  if (selectedStyles.length === 0) {
+    showError('Please select at least one style');
+    generateVideoBtn.disabled = false;
+    return;
+  }
+
+  try {
+    // Load settings
+    const settings = await chrome.storage.local.get(['grokApiKey', 'remotionServer', 'videoDuration']);
+
+    if (!settings.grokApiKey) {
+      throw new Error('Please set your Grok API key in settings');
+    }
+
+    if (!settings.remotionServer) {
+      throw new Error('Please set your Remotion server URL in settings');
+    }
+
+    // Get video duration (default to 5 seconds)
+    const videoDuration = settings.videoDuration || 5;
+
+    // Show progress view
+    tweetPreview.classList.add('hidden');
+    generationProgress.classList.remove('hidden');
+
+    // Create parallel jobs for each selected style
+    const jobPromises = selectedStyles.map(async (style) => {
+      const response = await fetch(`${settings.remotionServer}/api/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          tweet: currentXPostData,
+          style: style,
+          grokApiKey: settings.grokApiKey,
+          videoDuration: videoDuration
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      return { style, jobId: result.jobId };
+    });
+
+    // Wait for all jobs to be created
+    const jobs = await Promise.all(jobPromises);
+
+    // Initialize progress UI for multiple videos
+    initializeMultiVideoProgress(jobs);
+
+    // Poll all jobs simultaneously
+    await pollMultipleJobs(jobs, settings.remotionServer);
+
+  } catch (error) {
+    // Enhanced error message for connection issues
+    let errorMsg = error.message;
+    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+      errorMsg = '❌ Cannot connect to server!\n\n' +
+                 'Make sure the server is running:\n' +
+                 '1. Open Terminal\n' +
+                 '2. Navigate to project folder\n' +
+                 '3. Run: npm run server\n' +
+                 '4. Wait for "server running" message\n' +
+                 '5. Try again';
+    }
+    showError(errorMsg);
+    generationProgress.classList.add('hidden');
+    tweetPreview.classList.remove('hidden');
+    generateVideoBtn.disabled = false;
+  }
+}
+
+function initializeMultiVideoProgress(jobs) {
+  const progressContainer = document.getElementById('generationProgress');
+  const progressFill = document.getElementById('progressFill');
+  const progressText = document.getElementById('progressText');
+
+  // Hide single progress bar
+  progressFill.style.display = 'none';
+
+  // Update header
+  progressText.textContent = `Generating ${jobs.length} video${jobs.length > 1 ? 's' : ''}...`;
+  progressText.style.textAlign = 'center';
+  progressText.style.marginBottom = '16px';
+
+  // Create progress list
+  const progressList = document.createElement('div');
+  progressList.id = 'multiVideoProgressList';
+  progressList.style.cssText = 'display: flex; flex-direction: column; gap: 12px;';
+
+  jobs.forEach(job => {
+    const jobItem = document.createElement('div');
+    jobItem.id = `job-${job.jobId}`;
+    jobItem.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(255, 255, 255, 0.05); border-radius: 6px;';
+
+    const statusIcon = document.createElement('span');
+    statusIcon.className = 'job-status-icon';
+    statusIcon.textContent = '⏳';
+    statusIcon.style.fontSize = '16px';
+
+    const styleName = document.createElement('span');
+    styleName.className = 'job-style-name';
+    styleName.textContent = job.style.charAt(0).toUpperCase() + job.style.slice(1);
+    styleName.style.cssText = 'font-weight: 600; min-width: 100px;';
+
+    const statusText = document.createElement('span');
+    statusText.className = 'job-status-text';
+    statusText.textContent = getRandomProgressMessage();
+    statusText.style.cssText = 'flex: 1; font-size: 12px; color: rgba(255, 255, 255, 0.7);';
+
+    const progressPercent = document.createElement('span');
+    progressPercent.className = 'job-progress-percent';
+    progressPercent.textContent = '0%';
+    progressPercent.style.cssText = 'font-size: 12px; color: rgba(255, 255, 255, 0.5); min-width: 40px; text-align: right;';
+
+    jobItem.appendChild(statusIcon);
+    jobItem.appendChild(styleName);
+    jobItem.appendChild(statusText);
+    jobItem.appendChild(progressPercent);
+
+    progressList.appendChild(jobItem);
+  });
+
+  // Remove old progress list if exists
+  const oldList = document.getElementById('multiVideoProgressList');
+  if (oldList) {
+    oldList.remove();
+  }
+
+  progressContainer.appendChild(progressList);
+}
+
+async function pollMultipleJobs(jobs, serverUrl) {
+  const maxAttempts = 60; // 60 * 2 seconds = 2 minutes max
+  const jobStatuses = {};
+  const completedVideos = [];
+
+  // Initialize job statuses
+  jobs.forEach(job => {
+    jobStatuses[job.jobId] = {
+      style: job.style,
+      status: 'processing',
+      attempts: 0
+    };
+  });
+
+  const pollJob = async (job) => {
+    const poll = async () => {
+      try {
+        const response = await fetch(`${serverUrl}/api/status/${job.jobId}`);
+        const status = await response.json();
+
+        if (status.error) {
+          updateJobProgress(job.jobId, job.style, 'failed', status.error, 0);
+          jobStatuses[job.jobId].status = 'failed';
+          return;
+        }
+
+        const progress = status.progress || 0;
+
+        if (status.status === 'completed') {
+          updateJobProgress(job.jobId, job.style, 'completed', 'Complete', 100);
+          jobStatuses[job.jobId].status = 'completed';
+          completedVideos.push({ style: job.style, videoUrl: status.videoUrl });
+          return;
+        }
+
+        if (status.status === 'failed') {
+          updateJobProgress(job.jobId, job.style, 'failed', status.message || 'Failed', 0);
+          jobStatuses[job.jobId].status = 'failed';
+          return;
+        }
+
+        // Update progress
+        updateJobProgress(job.jobId, job.style, 'processing', status.message || getRandomProgressMessage(), Math.round(progress));
+
+        jobStatuses[job.jobId].attempts++;
+        if (jobStatuses[job.jobId].attempts < maxAttempts) {
+          setTimeout(poll, 2000); // Poll every 2 seconds
+        } else {
+          updateJobProgress(job.jobId, job.style, 'failed', 'Timeout', 0);
+          jobStatuses[job.jobId].status = 'failed';
+        }
+      } catch (error) {
+        updateJobProgress(job.jobId, job.style, 'failed', error.message, 0);
+        jobStatuses[job.jobId].status = 'failed';
+      }
+    };
+
+    await poll();
+  };
+
+  // Poll all jobs in parallel
+  await Promise.all(jobs.map(job => pollJob(job)));
+
+  // When all complete, show video gallery
+  if (completedVideos.length > 0) {
+    displayVideoGallery(completedVideos);
+  } else {
+    showError('All video generations failed. Please try again.');
+    generationProgress.classList.add('hidden');
+    tweetPreview.classList.remove('hidden');
+    generateVideoBtn.disabled = false;
+  }
+}
+
+function updateJobProgress(jobId, style, status, message, progress) {
+  const jobItem = document.getElementById(`job-${jobId}`);
+  if (!jobItem) return;
+
+  const statusIcon = jobItem.querySelector('.job-status-icon');
+  const statusText = jobItem.querySelector('.job-status-text');
+  const progressPercent = jobItem.querySelector('.job-progress-percent');
+
+  if (status === 'completed') {
+    statusIcon.textContent = '✓';
+    statusIcon.style.color = '#10b981';
+    statusText.textContent = message;
+    progressPercent.textContent = '100%';
+    progressPercent.style.color = '#10b981';
+  } else if (status === 'failed') {
+    statusIcon.textContent = '✗';
+    statusIcon.style.color = '#ef4444';
+    statusText.textContent = message;
+    progressPercent.textContent = '0%';
+    progressPercent.style.color = '#ef4444';
+  } else {
+    statusIcon.textContent = '⏳';
+    statusText.textContent = message;
+    progressPercent.textContent = `${progress}%`;
+  }
+}
+
+async function pollRenderStatus(jobId, serverUrl) {
+  const maxAttempts = 60; // 60 * 2 seconds = 2 minutes max
+  let attempts = 0;
+
+  const poll = async () => {
+    try {
+      const response = await fetch(`${serverUrl}/api/status/${jobId}`);
+      const status = await response.json();
+
+      if (status.error) {
+        throw new Error(status.error);
+      }
+
+      if (status.progress) {
+        updateProgress(30 + (status.progress * 0.7), status.message || 'Rendering video...');
+      }
+
+      if (status.status === 'completed') {
+        updateProgress(100, 'Video ready!');
+        displayVideoPreview(status.videoUrl);
+        return;
+      }
+
+      if (status.status === 'failed') {
+        throw new Error(status.message || 'Rendering failed');
+      }
+
+      attempts++;
+      if (attempts < maxAttempts) {
+        setTimeout(poll, 2000); // Poll every 2 seconds
+      } else {
+        throw new Error('Render timeout - please try again');
+      }
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  await poll();
+}
+
+function updateProgress(percentage, message) {
+  document.getElementById('progressFill').style.width = `${percentage}%`;
+  document.getElementById('progressText').textContent = message;
+}
+
+function displayVideoGallery(videos) {
+  generationProgress.classList.add('hidden');
+  videoPreview.classList.remove('hidden');
+
+  const videoPlayer = document.getElementById('videoPlayer');
+  const downloadBtn = document.getElementById('downloadBtn');
+
+  // If only one video, show it directly
+  if (videos.length === 1) {
+    videoPlayer.src = videos[0].videoUrl;
+    videoPlayer.currentVideoUrl = videos[0].videoUrl;
+    videoPlayer.style.display = 'block';
+    return;
+  }
+
+  // For multiple videos, create a gallery
+  videoPlayer.style.display = 'none';
+
+  // Remove old gallery if exists
+  let gallery = document.getElementById('videoGallery');
+  if (gallery) {
+    gallery.remove();
+  }
+
+  // Create new gallery
+  gallery = document.createElement('div');
+  gallery.id = 'videoGallery';
+  gallery.style.cssText = 'display: flex; flex-direction: column; gap: 16px;';
+
+  videos.forEach((video, index) => {
+    const videoCard = document.createElement('div');
+    videoCard.style.cssText = 'background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 12px;';
+
+    const styleTitle = document.createElement('h3');
+    styleTitle.textContent = video.style.charAt(0).toUpperCase() + video.style.slice(1) + ' Style';
+    styleTitle.style.cssText = 'margin: 0 0 8px 0; font-size: 14px; font-weight: 600;';
+
+    const videoElement = document.createElement('video');
+    videoElement.src = video.videoUrl;
+    videoElement.controls = true;
+    videoElement.style.cssText = 'width: 100%; border-radius: 6px; margin-bottom: 8px;';
+
+    const downloadButton = document.createElement('button');
+    downloadButton.textContent = 'Download';
+    downloadButton.className = 'btn btn-secondary';
+    downloadButton.style.cssText = 'width: 100%;';
+    downloadButton.onclick = () => downloadSpecificVideo(video.videoUrl, video.style);
+
+    videoCard.appendChild(styleTitle);
+    videoCard.appendChild(videoElement);
+    videoCard.appendChild(downloadButton);
+    gallery.appendChild(videoCard);
+  });
+
+  // Insert gallery after video player
+  videoPlayer.parentNode.insertBefore(gallery, videoPlayer.nextSibling);
+
+  // Hide the main download button when showing gallery
+  downloadBtn.style.display = 'none';
+}
+
+function displayVideoPreview(videoUrl) {
+  generationProgress.classList.add('hidden');
+  videoPreview.classList.remove('hidden');
+
+  const videoPlayer = document.getElementById('videoPlayer');
+  videoPlayer.src = videoUrl;
+  videoPlayer.currentVideoUrl = videoUrl; // Store for download
+  videoPlayer.style.display = 'block';
+
+  // Show download button
+  const downloadBtn = document.getElementById('downloadBtn');
+  downloadBtn.style.display = 'block';
+}
+
+async function downloadVideo() {
+  const videoPlayer = document.getElementById('videoPlayer');
+  const videoUrl = videoPlayer.currentVideoUrl;
+
+  if (!videoUrl) {
+    showError('No video to download');
+    return;
+  }
+
+  try {
+    // Download the video
+    await chrome.downloads.download({
+      url: videoUrl,
+      filename: `xpost-video-${Date.now()}.mp4`,
+      saveAs: true
+    });
+  } catch (error) {
+    showError(`Download failed: ${error.message}`);
+  }
+}
+
+async function downloadSpecificVideo(videoUrl, style) {
+  try {
+    await chrome.downloads.download({
+      url: videoUrl,
+      filename: `xpost-video-${style}-${Date.now()}.mp4`,
+      saveAs: true
+    });
+  } catch (error) {
+    showError(`Download failed: ${error.message}`);
+  }
+}
+
+function resetToCapture() {
+  currentXPostData = null;
+  selectedStyles = [];
+
+  videoPreview.classList.add('hidden');
+  generationProgress.classList.add('hidden');
+  tweetPreview.classList.add('hidden');
+  captureSection.classList.remove('hidden');
+
+  captureTweetBtn.disabled = false;
+  captureTweetBtn.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+      <path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z" />
+      <circle cx="12" cy="13" r="3" />
+    </svg>
+    Capture X Post
+  `;
+
+  // Reset style buttons - none selected by default
+  styleBtns.forEach(btn => {
+    btn.classList.remove('active');
+  });
+
+  // Reset generate button text
+  updateGenerateButtonText();
+
+  // Remove video gallery if exists
+  const gallery = document.getElementById('videoGallery');
+  if (gallery) {
+    gallery.remove();
+  }
+
+  // Reset progress UI
+  const progressFill = document.getElementById('progressFill');
+  const progressList = document.getElementById('multiVideoProgressList');
+  if (progressFill) {
+    progressFill.style.display = 'block';
+  }
+  if (progressList) {
+    progressList.remove();
+  }
+
+  // Show download button and video player
+  const downloadBtn = document.getElementById('downloadBtn');
+  const videoPlayer = document.getElementById('videoPlayer');
+  if (downloadBtn) downloadBtn.style.display = 'block';
+  if (videoPlayer) videoPlayer.style.display = 'block';
+}
+
+function showSettings() {
+  mainView.classList.add('hidden');
+  settingsView.classList.remove('hidden');
+  checkServerHealth(); // Check server status when opening settings
+}
+
+function showMain() {
+  settingsView.classList.add('hidden');
+  mainView.classList.remove('hidden');
+}
+
+async function loadSettings() {
+  const settings = await chrome.storage.local.get(['grokApiKey', 'remotionServer', 'videoDuration']);
+
+  if (settings.grokApiKey) {
+    document.getElementById('grokApiKey').value = settings.grokApiKey;
+  }
+
+  if (settings.remotionServer) {
+    document.getElementById('remotionServer').value = settings.remotionServer;
+  } else {
+    document.getElementById('remotionServer').value = 'http://localhost:3000';
+  }
+
+  // Load video duration setting (default: 5 seconds)
+  const videoDuration = settings.videoDuration || 5;
+  const durationSelect = document.getElementById('videoDuration');
+  if (durationSelect) {
+    durationSelect.value = videoDuration;
+    updateDurationPreview(videoDuration);
+
+    // Add event listener for duration changes
+    durationSelect.addEventListener('change', (e) => {
+      updateDurationPreview(parseInt(e.target.value));
+    });
+  }
+}
+
+function updateDurationPreview(seconds) {
+  const frames = seconds * 30;
+  const previewElement = document.getElementById('durationPreview');
+  if (previewElement) {
+    previewElement.textContent = `${seconds} seconds (${frames} frames @ 30fps)`;
+  }
+}
+
+async function saveSettings() {
+  const grokApiKey = document.getElementById('grokApiKey').value.trim();
+  const remotionServer = document.getElementById('remotionServer').value.trim();
+  const saveStatus = document.getElementById('saveStatus');
+
+  if (!grokApiKey) {
+    saveStatus.textContent = 'Please enter a Grok API key';
+    saveStatus.className = 'save-status error';
+    saveStatus.classList.remove('hidden');
+    return;
+  }
+
+  if (!remotionServer) {
+    saveStatus.textContent = 'Please enter a Remotion server URL';
+    saveStatus.className = 'save-status error';
+    saveStatus.classList.remove('hidden');
+    return;
+  }
+
+  try {
+    // Check server health first
+    const serverOk = await checkServerHealth();
+
+    if (!serverOk) {
+      saveStatus.textContent = '⚠️ Settings saved, but server is not running';
+      saveStatus.className = 'save-status error';
+      saveStatus.classList.remove('hidden');
+    }
+
+    // Check Grok API key format (basic validation)
+    if (!grokApiKey.startsWith('xai-')) {
+      saveStatus.textContent = '⚠️ API key should start with "xai-". Double check it!';
+      saveStatus.className = 'save-status error';
+      saveStatus.classList.remove('hidden');
+
+      setTimeout(() => {
+        saveStatus.classList.add('hidden');
+      }, 5000);
+      return;
+    }
+
+    // Get video duration setting
+    const videoDuration = parseInt(document.getElementById('videoDuration').value) || 5;
+
+    await chrome.storage.local.set({
+      grokApiKey,
+      remotionServer,
+      videoDuration
+    });
+
+    if (serverOk) {
+      saveStatus.textContent = '✓ Settings saved successfully';
+      saveStatus.className = 'save-status success';
+      saveStatus.classList.remove('hidden');
+    }
+
+    setTimeout(() => {
+      saveStatus.classList.add('hidden');
+    }, 3000);
+  } catch (error) {
+    saveStatus.textContent = `Failed to save: ${error.message}`;
+    saveStatus.className = 'save-status error';
+    saveStatus.classList.remove('hidden');
+  }
+}
+
+async function checkServerHealth() {
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const statusDotHeader = document.getElementById('statusDotHeader');
+  const remotionServer = document.getElementById('remotionServer').value.trim() || 'http://localhost:3000';
+
+  // Update UI to show checking state
+  if (statusDot) {
+    statusDot.className = 'status-dot';
+    statusText.textContent = 'Checking server...';
+  }
+  if (statusDotHeader) {
+    statusDotHeader.className = 'status-dot-inline';
+  }
+
+  try {
+    const response = await fetch(`${remotionServer}/api/health`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      mode: 'cors'
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (statusDot) {
+        statusDot.className = 'status-dot online';
+        statusText.textContent = 'Server is running';
+      }
+      if (statusDotHeader) {
+        statusDotHeader.className = 'status-dot-inline online';
+      }
+      return true;
+    } else {
+      throw new Error('Server returned error');
+    }
+  } catch (error) {
+    if (statusDot) {
+      statusDot.className = 'status-dot offline';
+      statusText.textContent = 'Server offline - See "How to start" below';
+    }
+    if (statusDotHeader) {
+      statusDotHeader.className = 'status-dot-inline offline';
+    }
+    return false;
+  }
+}
+
+function showError(message) {
+  if (message) {
+    errorMessage.textContent = message;
+    errorMessage.classList.remove('hidden');
+  } else {
+    errorMessage.classList.add('hidden');
+  }
+}
