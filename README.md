@@ -6,6 +6,12 @@ Transform your X (Twitter) posts into stunning motion graphics videos with AI-po
 
 X Article to Video is a Chrome extension that captures tweets and converts them into professional video content using Remotion and the Grok AI API. Choose from multiple video styles, preview in real-time, and download instantly.
 
+---
+
+**Sponsored by [Postful.ai](https://postful.ai)** - The AI-powered social media management platform that helps you create, schedule, and optimize content across all platforms.
+
+---
+
 ## Features
 
 - **One-Click Capture** - Extract tweet content directly from X/Twitter
@@ -178,6 +184,7 @@ MIT License - see LICENSE file for details
 - Built with [Remotion](https://remotion.dev)
 - Powered by [Grok AI](https://x.ai)
 - Inspired by modern motion graphics design
+- Sponsored by [Postful.ai](https://postful.ai)
 
 ## Support
 
