@@ -100,9 +100,10 @@ Keep visible labels for form controls.
 Keep icon-only button titles and meaningful image alt text.
 Show selected, hover, active, online, offline, loading, success, and error states.
 
-Remotion templates receive post data, optional generated images, color props,
-and timing props. Drive animation from frames with Remotion utilities.
-Avoid CSS time-based animation inside rendered compositions.
+Render input includes post data and can include generated images, color props,
+and timing props. Individual templates use only the props they declare. Drive
+animation from frames with Remotion utilities. Avoid CSS time-based animation
+inside rendered compositions.
 
 ## Do's and Don'ts
 
