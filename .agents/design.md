@@ -17,17 +17,17 @@ Each video style owns a distinct visual system and motion language.
 
 The extension popup uses a fixed dark palette in `extension/popup.css`.
 
-| Role | Value |
-|---|---|
-| Canvas | `#1c1c1e` |
+| Role           | Value     |
+| -------------- | --------- |
+| Canvas         | `#1c1c1e` |
 | Raised surface | `#2c2c2e` |
-| Primary text | `#ffffff` |
+| Primary text   | `#ffffff` |
 | Secondary text | `#98989d` |
-| Border | `#38383a` |
-| Strong border | `#48484a` |
+| Border         | `#38383a` |
+| Strong border  | `#48484a` |
 | Primary action | `#0a84ff` |
-| Online | `#30d158` |
-| Offline | `#ff453a` |
+| Online         | `#30d158` |
+| Offline        | `#ff453a` |
 
 Keep status labels with status colors.
 Do not use the popup palette as a universal video palette.
