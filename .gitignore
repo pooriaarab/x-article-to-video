@@ -26,3 +26,5 @@ Thumbs.db
 logs/
 *.log
 npm-debug.log*
+# Cursor cloud — local secrets stay local
+.env.*.local
