@@ -8,9 +8,9 @@
     "server": "node server.js"
   },
   "dependencies": {
-    "@remotion/bundler": "^4.0.407",
-    "@remotion/cli": "^4.0.407",
-    "@remotion/renderer": "^4.0.407",
+    "@remotion/bundler": "^4.0.520",
+    "@remotion/cli": "^4.0.520",
+    "@remotion/renderer": "^4.0.520",
     "body-parser": "^2.3.0",
     "cors": "^2.8.5",
     "express": "^5.2.1",
