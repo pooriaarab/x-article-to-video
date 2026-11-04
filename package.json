@@ -8,8 +8,8 @@
     "server": "node server.js"
   },
   "dependencies": {
-    "@remotion/bundler": "^4.0.520",
-    "@remotion/cli": "^4.0.520",
+    "@remotion/bundler": "^4.0.540",
+    "@remotion/cli": "^4.0.540",
     "@remotion/renderer": "^4.0.407",
     "body-parser": "^2.4.0",
     "cors": "^2.8.5",
